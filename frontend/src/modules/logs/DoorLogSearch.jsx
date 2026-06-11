@@ -1,30 +1,49 @@
 import { Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { EmptyState } from "../../components/EmptyState";
 import { StatusBadge } from "../../components/StatusBadge";
 import { formatDateTime } from "../../utils/format";
+import { accessApi } from "../../api/client";
 
-export function DoorLogSearch({ data }) {
+export function DoorLogSearch() {
   const [keyword, setKeyword] = useState("");
   const [result, setResult] = useState("");
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const logs = useMemo(() => {
-    return data.logs.filter((log) => {
-      const matchesKeyword = keyword
-        ? `${log.opener_name}${log.device_name}${log.device_code}${log.failure_reason}`.toLowerCase().includes(keyword.toLowerCase())
-        : true;
-      const matchesResult = result ? log.result === result : true;
-      return matchesKeyword && matchesResult;
-    });
-  }, [data.logs, keyword, result]);
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError("");
+
+    accessApi
+      .doorLogs({ keyword, result })
+      .then((data) => {
+        if (!cancelled) {
+          setLogs(data);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(err.message || "加载失败");
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [keyword, result]);
 
   return (
     <section className="view-stack">
       <header className="page-header">
         <div>
           <h1>开门日志查询</h1>
-          <p>按人员、设备、失败原因和开门结果快速筛选门禁流水。</p>
+          <p>按人员、设备、编码、失败原因和开门结果快速筛选门禁流水。</p>
         </div>
       </header>
 
@@ -41,6 +60,15 @@ export function DoorLogSearch({ data }) {
       </div>
 
       <div className="table-panel">
+        <div className="table-toolbar">
+          {loading ? (
+            <span className="muted">加载中…</span>
+          ) : error ? (
+            <span className="error-text">{error}</span>
+          ) : (
+            <span className="muted">共 {logs.length} 条记录</span>
+          )}
+        </div>
         <table>
           <thead>
             <tr>
@@ -69,7 +97,7 @@ export function DoorLogSearch({ data }) {
             ))}
           </tbody>
         </table>
-        {!logs.length && <EmptyState />}
+        {!loading && !logs.length && <EmptyState />}
       </div>
     </section>
   );
