@@ -49,6 +49,7 @@ class AlarmViewSet(viewsets.ModelViewSet):
 
 class DoorLogViewSet(viewsets.ModelViewSet):
     serializer_class = DoorOpenLogSerializer
+    pagination_class = None
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["opener_name", "failure_reason", "device__name", "device__device_code", "device__location"]
     ordering_fields = ["opened_at", "result", "opener_type"]

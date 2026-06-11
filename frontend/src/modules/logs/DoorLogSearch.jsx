@@ -1,5 +1,5 @@
 import { Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { EmptyState } from "../../components/EmptyState";
 import { StatusBadge } from "../../components/StatusBadge";
@@ -8,10 +8,20 @@ import { accessApi } from "../../api/client";
 
 export function DoorLogSearch() {
   const [keyword, setKeyword] = useState("");
+  const [debouncedKeyword, setDebouncedKeyword] = useState("");
   const [result, setResult] = useState("");
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      setDebouncedKeyword(keyword);
+    }, 300);
+    return () => clearTimeout(timerRef.current);
+  }, [keyword]);
 
   useEffect(() => {
     let cancelled = false;
@@ -19,7 +29,7 @@ export function DoorLogSearch() {
     setError("");
 
     accessApi
-      .doorLogs({ keyword, result })
+      .doorLogs({ keyword: debouncedKeyword, result })
       .then((data) => {
         if (!cancelled) {
           setLogs(data);
@@ -36,7 +46,7 @@ export function DoorLogSearch() {
     return () => {
       cancelled = true;
     };
-  }, [keyword, result]);
+  }, [debouncedKeyword, result]);
 
   return (
     <section className="view-stack">
