@@ -11,6 +11,8 @@ from .serializers import AccessDeviceSerializer, AlarmEventSerializer, DoorOpenL
 
 class DoorLogPagination(PageNumberPagination):
     page_size = 20
+    page_size_query_param = "page_size"
+    max_page_size = 200
 
 
 class DeviceViewSet(viewsets.ModelViewSet):

@@ -2,6 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 
 import { accessApi } from "../api/client";
 
+function unwrapList(payload) {
+  return Array.isArray(payload) ? payload : payload.results || [];
+}
+
 export function useAccessData() {
   const [state, setState] = useState({
     loading: true,
@@ -18,13 +22,14 @@ export function useAccessData() {
 
     async function load() {
       try {
-        const [stats, devices, visitors, alarms, logs] = await Promise.all([
+        const [stats, devices, visitors, alarms, logsRaw] = await Promise.all([
           accessApi.stats(),
           accessApi.devices(),
           accessApi.visitors(),
           accessApi.alarms(),
-          accessApi.doorLogs(),
+          accessApi.doorLogs({ page_size: 5 }),
         ]);
+        const logs = unwrapList(logsRaw);
         if (mounted) {
           setState({ loading: false, error: "", stats, devices, visitors, alarms, logs });
         }

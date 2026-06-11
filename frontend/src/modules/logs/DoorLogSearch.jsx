@@ -18,6 +18,7 @@ export function DoorLogSearch() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const timerRef = useRef(null);
+  const tablePanelRef = useRef(null);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
@@ -32,6 +33,12 @@ export function DoorLogSearch() {
   useEffect(() => {
     setPage(1);
   }, [debouncedKeyword, result]);
+
+  useEffect(() => {
+    if (tablePanelRef.current) {
+      tablePanelRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [page]);
 
   useEffect(() => {
     let cancelled = false;
@@ -82,7 +89,7 @@ export function DoorLogSearch() {
         </select>
       </div>
 
-      <div className="table-panel">
+      <div className="table-panel" ref={tablePanelRef}>
         <div className="table-toolbar">
           {loading ? (
             <span className="muted">加载中…</span>
