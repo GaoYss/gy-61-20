@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { EmptyState } from "../../components/EmptyState";
@@ -6,14 +6,20 @@ import { StatusBadge } from "../../components/StatusBadge";
 import { formatDateTime } from "../../utils/format";
 import { accessApi } from "../../api/client";
 
+const PAGE_SIZE = 20;
+
 export function DoorLogSearch() {
   const [keyword, setKeyword] = useState("");
   const [debouncedKeyword, setDebouncedKeyword] = useState("");
   const [result, setResult] = useState("");
+  const [page, setPage] = useState(1);
   const [logs, setLogs] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const timerRef = useRef(null);
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
   useEffect(() => {
     clearTimeout(timerRef.current);
@@ -24,15 +30,22 @@ export function DoorLogSearch() {
   }, [keyword]);
 
   useEffect(() => {
+    setPage(1);
+  }, [debouncedKeyword, result]);
+
+  useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError("");
 
     accessApi
-      .doorLogs({ keyword: debouncedKeyword, result })
+      .doorLogs({ keyword: debouncedKeyword, result, page })
       .then((data) => {
         if (!cancelled) {
-          setLogs(data);
+          const results = Array.isArray(data) ? data : data.results || [];
+          const count = typeof data.count === "number" ? data.count : results.length;
+          setLogs(results);
+          setTotalCount(count);
           setLoading(false);
         }
       })
@@ -46,7 +59,7 @@ export function DoorLogSearch() {
     return () => {
       cancelled = true;
     };
-  }, [debouncedKeyword, result]);
+  }, [debouncedKeyword, result, page]);
 
   return (
     <section className="view-stack">
@@ -76,7 +89,7 @@ export function DoorLogSearch() {
           ) : error ? (
             <span className="error-text">{error}</span>
           ) : (
-            <span className="muted">共 {logs.length} 条记录</span>
+            <span className="muted">共 {totalCount} 条记录</span>
           )}
         </div>
         <table>
@@ -108,6 +121,19 @@ export function DoorLogSearch() {
           </tbody>
         </table>
         {!loading && !logs.length && <EmptyState />}
+        {totalPages > 1 && (
+          <div className="pagination">
+            <button className="page-btn" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+              <ChevronLeft size={16} />
+              上一页
+            </button>
+            <span className="page-info">{page} / {totalPages}</span>
+            <button className="page-btn" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
+              下一页
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );

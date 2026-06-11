@@ -32,6 +32,6 @@ export const accessApi = {
       if (value) params.set(key, value);
     });
     const query = params.toString();
-    return request(`/door-logs/${query ? `?${query}` : ""}`).then(unwrapList);
+    return request(`/door-logs/${query ? `?${query}` : ""}`);
   },
 };

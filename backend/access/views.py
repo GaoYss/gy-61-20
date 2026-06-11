@@ -1,11 +1,16 @@
 from django.db.models import Count, Q
 from django.utils import timezone
 from rest_framework import filters, viewsets
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import AccessDevice, AlarmEvent, DoorOpenLog, VisitorPass
 from .serializers import AccessDeviceSerializer, AlarmEventSerializer, DoorOpenLogSerializer, VisitorPassSerializer
+
+
+class DoorLogPagination(PageNumberPagination):
+    page_size = 20
 
 
 class DeviceViewSet(viewsets.ModelViewSet):
@@ -49,7 +54,7 @@ class AlarmViewSet(viewsets.ModelViewSet):
 
 class DoorLogViewSet(viewsets.ModelViewSet):
     serializer_class = DoorOpenLogSerializer
-    pagination_class = None
+    pagination_class = DoorLogPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["opener_name", "failure_reason", "device__name", "device__device_code", "device__location"]
     ordering_fields = ["opened_at", "result", "opener_type"]
