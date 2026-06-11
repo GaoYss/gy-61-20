@@ -33,6 +33,7 @@ class AlarmEventSerializer(serializers.ModelSerializer):
 
 class DoorOpenLogSerializer(serializers.ModelSerializer):
     device_name = serializers.CharField(source="device.name", read_only=True)
+    device_code = serializers.CharField(source="device.device_code", read_only=True)
     opener_type_display = serializers.CharField(source="get_opener_type_display", read_only=True)
     credential_method_display = serializers.CharField(source="get_credential_method_display", read_only=True)
     result_display = serializers.CharField(source="get_result_display", read_only=True)

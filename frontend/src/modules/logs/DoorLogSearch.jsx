@@ -12,7 +12,7 @@ export function DoorLogSearch({ data }) {
   const logs = useMemo(() => {
     return data.logs.filter((log) => {
       const matchesKeyword = keyword
-        ? `${log.opener_name}${log.device_name}${log.failure_reason}`.toLowerCase().includes(keyword.toLowerCase())
+        ? `${log.opener_name}${log.device_name}${log.device_code}${log.failure_reason}`.toLowerCase().includes(keyword.toLowerCase())
         : true;
       const matchesResult = result ? log.result === result : true;
       return matchesKeyword && matchesResult;
@@ -31,7 +31,7 @@ export function DoorLogSearch({ data }) {
       <div className="filter-bar">
         <label>
           <Search size={16} />
-          <input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="搜索人员、设备或原因" />
+          <input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="搜索人员、设备、编码或原因" />
         </label>
         <select value={result} onChange={(event) => setResult(event.target.value)}>
           <option value="">全部结果</option>
@@ -48,6 +48,7 @@ export function DoorLogSearch({ data }) {
               <th>人员</th>
               <th>类型</th>
               <th>设备</th>
+              <th>设备编码</th>
               <th>方式</th>
               <th>结果</th>
               <th>说明</th>
@@ -60,6 +61,7 @@ export function DoorLogSearch({ data }) {
                 <td>{log.opener_name}</td>
                 <td>{log.opener_type_display}</td>
                 <td>{log.device_name}</td>
+                <td>{log.device_code}</td>
                 <td>{log.credential_method_display}</td>
                 <td><StatusBadge value={log.result} label={log.result_display} /></td>
                 <td>{log.failure_reason || "-"}</td>

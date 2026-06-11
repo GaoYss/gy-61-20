@@ -50,7 +50,7 @@ class AlarmViewSet(viewsets.ModelViewSet):
 class DoorLogViewSet(viewsets.ModelViewSet):
     serializer_class = DoorOpenLogSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["opener_name", "failure_reason", "device__name", "device__location"]
+    search_fields = ["opener_name", "failure_reason", "device__name", "device__device_code", "device__location"]
     ordering_fields = ["opened_at", "result", "opener_type"]
 
     def get_queryset(self):
@@ -66,6 +66,7 @@ class DoorLogViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(
                 Q(opener_name__icontains=keyword)
                 | Q(device__name__icontains=keyword)
+                | Q(device__device_code__icontains=keyword)
                 | Q(device__location__icontains=keyword)
             )
         return queryset
